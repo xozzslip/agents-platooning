@@ -23,17 +23,17 @@ if __name__ == '__main__':
     minions = [TargetAgent(), TargetAgent()]
     tp = TrajectoryPlatoon(master=master, minions=minions, platoon_struct=ps)
 
-    times = np.arange(0, 1100, 1)
+    times = np.arange(0, 1450, 1)
     for t in times:
         tp.update()
 
-    traj,  = plt.plot([p.x for p in trajectory], [p.y for p in trajectory], 'bo', alpha=0.2, label='Траектория')
-    track, = plt.plot([p.x for p in tp.master.story.positions], [p.y for p in tp.master.story.positions], 'black', label='След движения')
-    s, = plt.plot(tp.master.story.positions[0].x, tp.master.story.positions[0].y, 'k^', label='Исходная точка')
-    f, = plt.plot(tp.master.story.positions[-1].x, tp.master.story.positions[-1].y, 'ko', label='Конечная точка')
+    # traj,  = plt.plot([p.x for p in trajectory], [p.y for p in trajectory], 'bo', alpha=0.2, label='Траектория')
+    # track, = plt.plot([p.x for p in tp.master.story.positions], [p.y for p in tp.master.story.positions], 'black', label='След движения')
+    # s, = plt.plot(tp.master.story.positions[0].x, tp.master.story.positions[0].y, 'k^', label='Исходная точка')
+    # f, = plt.plot(tp.master.story.positions[-1].x, tp.master.story.positions[-1].y, 'ko', label='Конечная точка')
     # plt.plot([p.x for p in tp.minions[0].story.positions], [p.y for p in tp.minions[0].story.positions])
     # plt.plot([p.x for p in tp.minions[1].story.positions], [p.y for p in tp.minions[1].story.positions])
-    plt.axis('equal')
+    # plt.axis('equal')
 
     # plt.plot([p.x for p in tp.targets[0]], [p.y for p in tp.targets[0]])
     # plt.plot(times, [e for e in tp.minions_errors[0]])
@@ -41,16 +41,23 @@ if __name__ == '__main__':
     
 
     # print(list(map(abs, tp.master.story.velocitie)))
-    plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, track, s, f], loc=1)
-    # plt.plot(times, [abs(p) for p in tp.master.story.accelerations], 'black')
+    # plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, track, s, f], loc=1)
+    plt.plot([i for i in range(-100, 1550)], [0 for _ in range(1650)], 'b--')
+    vel, = plt.plot(times, [abs(p) for p in tp.master.story.velocities], 'black', label='Скорость')
+    s, = plt.plot(0, abs(tp.master.story.velocities[0]), 'kp')
+    f, = plt.plot(times[-1], abs(tp.master.story.velocities[-1]), 'kp')
     # err, = plt.plot(times, [p for p in tp.master.d_story['vector_to_traj']], 'black', label='Отколонение')
-    # plt.plot([i for i in range(-50, 1050)], [0 for _ in range(1100)], 'b--')
+    
+    bord, = plt.plot([i for i in range(-100, 1550)], [54 for _ in range(1650)], 'r--', label='Зона стац.\nдвижения')
+    plt.plot([i for i in range(-100, 1550)], [61 for _ in range(1650)], 'r--')
+
     # p, = plt.plot(200, 0, 'r.', label='Точка перепада')
     # plt.plot(404, 0, 'red', marker='.')
     # plt.plot(601, 0, 'red', marker='.'), plt.plot(799, 0, 'red', marker='.')
-    plt.ylabel('Координата $y$')
-    plt.xlabel('Координата $x$')
-    # plt.legend(handles=[err, p], loc=1)
-    plt.savefig('text/master-trajectory-0.png', bbox_inches='tight')
+    plt.ylabel('Скорость')
+    plt.xlabel('Время')
+    plt.xlim(-70, 1500)
+    plt.legend(handles=[vel, bord], loc=1)
+    plt.savefig('text/master-trajectory-0-velocity.png', bbox_inches='tight')
 
     plt.show()
