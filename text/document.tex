@@ -1,0 +1,68 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\author{Хасан Хафизов}
+\title{Децентрализованное управление строем}
+
+\begin{document}
+	\maketitle
+	
+\section{Механическая модель агента}
+Моделью агента является материальная точка с массой $m$. Закон движения:
+$$\begin{cases} 
+m \ddot{x} = F_x \\
+m \ddot{y} = F_y \end{cases}
+$$
+
+$\vec{F}$ — сила, действующая на агента, может включать в себя:
+$$ \vec{F} = \vec{u} + \vec{W} + \vec{F_{\text{тр}}}$$
+Где $\vec{u}$ — управляющее воздействие, $\vec{W}$ — случайные помехи, $\vec{F_{\text{тр}}}$ — сила трения.
+\par
+В предлагаемом мной алгоритме управления агентов можно разделить на два класса:
+\begin{itemize}
+	\item интеллектуальный (мастер)
+	\item управляемый (миньон)
+\end{itemize}
+Закон управления для этих двух типов агентов задаётся по-разному.
+\subsection{Мастер}
+Мастером является агент, для которого желаемый закон движения $S_d$ задаётся оператором извне: это может быть записанная в память агента траектория, целевая позиция или скорость. \par
+Фактически, этот агент ничего не знает о существовании других агентов в строю (миньонов). Его задача — выполнение поставленного закона движения, поэтому закон управления:
+$$ \vec{u} = \vec{u}(S_d)$$
+Рассмотрим конкретный закон управления для движения по некоторой траектории $\vec{tr}(t)$:
+$$ \vec{u}_{tr} = \vec{u}_{along} + \vec{u}_{across} $$
+Закон управления состоит из двух частей. Первая $\vec{u}_{along}$ отвечает за усилие вдоль траектории, вторая $\vec{u}_{across}$ — поперёк. Направлением для $\vec{u}_{along}$ служит направление вектора между текущим положением агента и следующей точкой траектории.
+\begin{center}{\textit{ (Тут будет более подробно о том, как вычисляется следующая точка траектории. И о $\vec{u}_{across}$. Довольно интересно получилось)}}
+\end{center}
+Пример движения мастера по траектории, задаваемой параметрическим уравнением:
+$$x(t) = \sin^7(x); \ y(t) = x^{\frac{2}{3}}$$
+
+\begin{figure}[!htbp]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=1\linewidth]{master-trajectory-0}
+		\caption{Заданная траектория и след движения мастера. Начало из точки $(0, 0)$}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=1\linewidth]{master-trajectory-0-velocity}
+		\caption{Скорость движения мастера}
+		\label{fig:sub2}
+	\end{subfigure}
+	\caption{Движение мастера по заданной траектории. Расстояния на рисунках задаются в километрах, время в секундах.}
+	\label{fig:test}
+\end{figure}
+
+
+\subsection{Миньон}
+Миньон является ведомым агентом.  
+
+
+\end{document}
