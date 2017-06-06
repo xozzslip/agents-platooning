@@ -8,36 +8,46 @@ from matplotlib.legend_handler import HandlerLine2D
 
 
 if __name__ == '__main__':
-    points = [V(0, 0), V(-0.1, -0.1)]
+    points = [V(0, 0), V(-100, -100), V(100, -100)]
     orientation = V(0, 1)
-    relations = [None, 0]
+    relations = [None, 0, 0]
     ps = PlatoonStruct(points, orientation, relations)
-    # Симпотная траектория V(math.sin(x) ** 3, x)
-    trajectory = [V(x, x**2) for x in np.arange(0, 3, 0.1)]
 
-    master = TrajectoryAgent(trajectory) # Находится в V(0, 0)
-    minions = [TargetAgent(V(0, 0))]
+    trajectory = [V(300 * math.cos(x / 300), x) for x in np.arange(0, 5000, 50)]
+
+    master = TrajectoryAgent(trajectory, 60) # Находится в V(0, 0)
+    minions = [TargetAgent(), TargetAgent()]
     tp = TrajectoryPlatoon(master=master, minions=minions, platoon_struct=ps)
 
-    times = np.arange(0, 3000, 1)
+    times = np.arange(0, 983, 1)
     for t in times:
         tp.update()
-        # print("angle={0:.2f}, target={1}, minion={2}, master={3}".format(
-        #   to_degree(tp.current_angle), tp.minions[0].target, tp.minions[0].position, tp.master.position)
-        # )
+
     # traj,  = plt.plot([p.x for p in trajectory], [p.y for p in trajectory], 'bo', alpha=0.2, label='Trajectory')
     # plt.plot([p.x for p in tp.master.story.positions], [p.y for p in tp.master.story.positions], 'black')
     # plt.plot(tp.master.story.positions[0].x, tp.master.story.positions[0].y, 'black', marker='^')
     # plt.plot(tp.master.story.positions[-1].x, tp.master.story.positions[-1].y, 'black', marker='o')
     # plt.plot([p.x for p in tp.minions[0].story.positions], [p.y for p in tp.minions[0].story.positions])
+    # plt.plot([p.x for p in tp.minions[1].story.positions], [p.y for p in tp.minions[1].story.positions])
+    # plt.axis('equal')
+
     # plt.plot([p.x for p in tp.targets[0]], [p.y for p in tp.targets[0]])
     # plt.plot(times, [e for e in tp.minions_errors[0]])
     # print(tp.minions_errors[0])
-    plt.plot(times, [abs(p) for p in tp.master.story.velocities], 'black')
+    
 
     # print(list(map(abs, tp.master.story.velocitie)))
-    #plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)})
-    # plt.axis('equal')
-    plt.ylabel('velocity')
+    # plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)})
+
+    # plt.plot(times, [abs(p) for p in tp.master.story.accelerations], 'black')
+    err, = plt.plot(times, [p for p in tp.master.d_story['vector_to_traj']], 'black', label='Отколонение')
+    plt.plot([i for i in range(-50, 1050)], [0 for _ in range(1100)], 'b--')
+    p, = plt.plot(200, 0, 'r.', label='Точка перепада')
+    plt.plot(404, 0, 'red', marker='.')
+    plt.plot(601, 0, 'red', marker='.'), plt.plot(799, 0, 'red', marker='.')
+    plt.ylabel('error')
     plt.xlabel('time')
+    plt.legend(handles=[err, p], loc=1)
+    plt.savefig('text/master-trajectory-error.png', bbox_inches='tight')
+
     plt.show()

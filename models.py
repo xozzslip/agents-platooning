@@ -1,5 +1,6 @@
 from base import V, RV, Story, angle, point_vector_distance, index_of_closest_position, norm
 import math
+from collections import defaultdict
 
 
 DELTA_T = 0.1
@@ -7,7 +8,7 @@ DELTA_T = 0.1
 
 class Agent:
     PID = (0.7, 0.9, 1)
-    MAX_FORCE = 0.05
+    MAX_FORCE = 40
 
     def __init__(self, position=None):
         self.position = position or V(0, 0)
@@ -16,6 +17,7 @@ class Agent:
 
         self.mass = 1
         self.story = Story()
+        self.d_story = defaultdict(list)
 
     def force(self):
         raise Exception.NotImplementedError
@@ -38,25 +40,31 @@ class TrajectoryAgent(Agent):
         assert len(trajectory) >= 2 
         self.trajectory = trajectory
         self.current_position = 0
-        self.desired_velocity = velocity or 0.08
+        self.desired_velocity = velocity or 60
         super().__init__(position=trajectory[0])
+
+        self.prev = V(0, 0)
+
 
     def force(self):
         cur_point = self.trajectory[self.current_position]
         if self.current_position + 1 < len(self.trajectory):
             next_point = self.trajectory[self.current_position + 1]
+            vector_to_traj = point_vector_distance(next_point, cur_point, self.position)
+            self.d_story['vector_to_traj'].append(abs(vector_to_traj) * (1 if (next_point.x - cur_point.x) * (vector_to_traj.y - cur_point.y) - (next_point.y - cur_point.y) * (vector_to_traj.x - cur_point.x) >= 0 else -1))
+            to_next_point_force = next_point - self.position
+            velocity_diff = self.desired_velocity - abs(self.velocity)
+            full_force = V(0, 0)
+            full_force += vector_to_traj * 1.5
+            full_force += (vector_to_traj - self.prev) * 100
+            self.prev = vector_to_traj
+            full_force += norm(to_next_point_force) * velocity_diff * self.PID[0]
+            full_force += self.acceleration * self.PID[1] * (-1)
         else:
             to_final = self.trajectory[-1] - self.position
-            if abs(to_final) > abs(self.acceleration * self.mass):
-                to_final = norm(to_final) * abs(self.acceleration * self.mass)
-            return self.velocity * (-1) * self.PID[1] + to_final * self.PID[0]
-        vector_to_traj = point_vector_distance(next_point, cur_point, self.position)
-        to_next_point_force = next_point - self.position
-        velocity_diff = self.desired_velocity - abs(self.velocity)
-        full_force = V(0, 0)
-        full_force += vector_to_traj * 1.5
-        full_force += norm(to_next_point_force) * velocity_diff * self.PID[0]
-        full_force += self.acceleration * self.PID[1] * (-1)
+            full_force = to_final * self.PID[0] - self.velocity * self.PID[1] 
+        if abs(full_force) > self.MAX_FORCE:
+            full_force = norm(full_force) * self.MAX_FORCE
         return full_force
 
     def update_current_position(self):
