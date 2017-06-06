@@ -6,7 +6,7 @@ DELTA_T = 0.1
 
 
 class Agent:
-	PID = (1, 1.1)
+	PID = (0.7, 0.9, 1)
 	MAX_FORCE = 0.05
 
 	def __init__(self, position=None):
@@ -32,12 +32,13 @@ class Agent:
 
 
 class TrajectoryAgent(Agent):
-	def __init__(self, trajectory):
+	def __init__(self, trajectory, velocity=None):
 		# Условие необходимое для корректного 
 		# определения current_orientation у строя
 		assert len(trajectory) >= 2 
 		self.trajectory = trajectory
 		self.current_position = 0
+		self.desired_velocity = velocity or 0.08
 		super().__init__(position=trajectory[0])
 
 	def force(self):
@@ -45,20 +46,17 @@ class TrajectoryAgent(Agent):
 		if self.current_position + 1 < len(self.trajectory):
 			next_point = self.trajectory[self.current_position + 1]
 		else:
-			next_point = self.trajectory[-1]
-			cur_point = self.trajectory[-2]
+			to_final = self.trajectory[-1] - self.position
+			if abs(to_final) > abs(self.acceleration * self.mass):
+				to_final = norm(to_final) * abs(self.acceleration * self.mass)
+			return self.velocity * (-1) * self.PID[1] + to_final * self.PID[0]
 		vector_to_traj = point_vector_distance(next_point, cur_point, self.position)
-		dist_to_target = abs(self.trajectory[-1] - self.position)
 		to_next_point_force = next_point - self.position
-
+		velocity_diff = self.desired_velocity - abs(self.velocity)
 		full_force = V(0, 0)
-		full_force += vector_to_traj * 1.3
-		if abs(dist_to_target) > self.MAX_FORCE:
-			dist_to_target = norm(dist_to_target) * self.MAX_FORCE
-		full_force += norm(to_next_point_force) * abs(dist_to_target) * self.PID[0]
-		full_force += self.velocity * self.PID[1] * (-1)
-		if self.current_position >= len(self.trajectory):
-			return self.mass * self.acceleration
+		full_force += vector_to_traj * 1.5
+		full_force += norm(to_next_point_force) * velocity_diff * self.PID[0]
+		full_force += self.acceleration * self.PID[1] * (-1)
 		return full_force
 
 	def update_current_position(self):
