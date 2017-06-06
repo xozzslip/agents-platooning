@@ -61,9 +61,26 @@ $$x(s) = 300 \cdot \cos(\frac{s}{300}); \ y(s) = s$$
 \end{figure}
 Проеденное расстояние:
 $$ S = \int_{0}^{5000} \sqrt{x'^2(t) + y'^2(t)} \approx 6051 \text{м} $$
-Выход на стационарный режим движения за 
+\par
+Стационарным режимом движения можно назвать режим, при котором скорость агента колеблется в пределах между $54\frac{\text{м}}{\text{с}}$ и $61\frac{\text{м}}{\text{с}}$. Более подробно скорость мастера в стационарном режиме можно увидеть на рис. \ref{fig:errors-master}a
 
-
+\begin{figure}[!htbp]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=1\linewidth]{master-trajectory-1-velocity.png}
+		\caption{Скорость мастера в стационарном режиме}
+		\label{fig:error-master-1}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=1\linewidth]{master-trajectory-error.png}
+		\caption{Отклонения мастера от траектории}
+		\label{fig:error-master-2}
+	\end{subfigure}
+	\caption{Иллюстрация отклонений от желаемого закона движения}.
+	\label{fig:errors-master}
+\end{figure}
 
 \subsection{Миньон}
 Миньон является ведомым агентом.  
