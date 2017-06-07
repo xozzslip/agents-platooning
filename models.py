@@ -7,7 +7,7 @@ DELTA_T = 0.1
 
 
 class Agent:
-    PID = (0.7, 0.9, 1)
+    PID = (0.4, 0.4, 1)
     MAX_FORCE = 40
 
     def __init__(self, position=None):
@@ -56,13 +56,13 @@ class TrajectoryAgent(Agent):
             velocity_diff = self.desired_velocity - abs(self.velocity)
             full_force = V(0, 0)
             full_force += vector_to_traj * 1.5
-            full_force += (vector_to_traj - self.prev) * 100
+            full_force += (vector_to_traj - self.prev) * 30
             self.prev = vector_to_traj
             full_force += norm(to_next_point_force) * velocity_diff * self.PID[0]
             full_force += self.acceleration * self.PID[1] * (-1)
         else:
             to_final = self.trajectory[-1] - self.position
-            full_force = to_final * self.PID[0] - self.velocity * self.PID[1] 
+            full_force = to_final * self.PID[0] / 2.2 - self.velocity * self.PID[1] 
         if abs(full_force) > self.MAX_FORCE:
             full_force = norm(full_force) * self.MAX_FORCE
         return full_force
