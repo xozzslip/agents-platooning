@@ -17,13 +17,13 @@ if __name__ == '__main__':
     relations = [None, 0, 0]
     ps = PlatoonStruct(points, orientation, relations)
 
-    trajectory = [V(x, 2000 * math.sin(x / 2000) ** 3) for x in np.arange(0, 3000, 100)]
+    trajectory = [V(300 * math.cos(x / 300), x) for x in np.arange(0, 5000, 100)]
 
     master = TrajectoryAgent(trajectory, 20) # Находится в V(0, 0)
     minions = [TargetAgent(), TargetAgent()]
     tp = TrajectoryPlatoon(master=master, minions=minions, platoon_struct=ps)
 
-    times = np.arange(0, 200, 0.1)
+    times = np.arange(0, 450, 0.1)
     for t in times:
         tp.update()
 
@@ -38,8 +38,8 @@ if __name__ == '__main__':
     # plt.ylabel('Координата $y$, м')
     # plt.xlabel('Координата $x$, м')
     # plt.axis('equal')
-    # plt.show()
     # plt.savefig('text/master-trajectory-0.png', bbox_inches='tight')
+    # plt.show()
     # plt.clf()
 
     # # Отклонение от траектории
