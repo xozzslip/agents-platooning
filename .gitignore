@@ -4,3 +4,5 @@
 *.log
 *.gz
 *.aux
+*.dia
+*.autosave
