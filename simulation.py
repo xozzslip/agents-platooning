@@ -7,14 +7,67 @@ import math
 import matplotlib.pyplot as plt
 from base import RV, V, angle, to_degree, norm
 from models import PlatoonStruct, TargetAgent, TrajectoryAgent, TrajectoryPlatoon
-from agents import DiracAgent, HeavisideAgent
+from agents import DiracAgent, HeavisideAgent, Target1DAgent
 from matplotlib.legend_handler import HandlerLine2D
 
 
-if __name__ == '__main__':
+def minion_sim():
+    points = [V(0, 0), V(-1, 0)]
+    orientation = V(1, 0)
+    relations = [None, 0]
+    ps = PlatoonStruct(points, orientation, relations)
+
+    master = HeavisideAgent(position=V(0, 0))
+    minions = [Target1DAgent(position=V(-1, 0))]
+    tp = TrajectoryPlatoon(master=master, minions=minions, platoon_struct=ps)
+    times = np.arange(0, 35, 0.1)
+    for t in times:
+        tp.update()
+
+    plt.axhline(0, color='grey', linestyle='--', alpha=0.8)
+    tr_er, = plt.plot(times, tp.minions[0].d_story['signed_target_error'], 'k', label='Отклонение миньона от\nвиртуального лидера')
+    plt.ylabel('Отклонение, м')
+    plt.xlabel('Время, с')
+    plt.legend(handles=[tr_er], loc=1)
+    plt.savefig('text/minion/heviside_targerr.png', bbox_inches='tight')
+    plt.clf()
+    
+    min_a, = plt.plot(times, [abs(p) for p in tp.minions[0].story.accelerations], 'k', label='Ускорение миньона')
+    mas_a, = plt.plot(times, [abs(p) for p in master.story.accelerations], 'b--', label='Ускорение виртуального лидера')
+    plt.ylabel('Ускорение, м/c^2')
+    plt.xlabel('Время, с')
+    plt.legend(handles=[min_a, mas_a], loc=4)
+    plt.savefig('text/minion/heviside_accelerations.png', bbox_inches='tight')
+    plt.clf()
+
+    min_v, = plt.plot(times[40:130], [abs(p) for p in tp.minions[0].story.velocities[40:130]], 'k', label='Скорость миньона')
+    mas_v, = plt.plot(times[40:130], [abs(p) for p in master.story.velocities[40:130]], 'b--', label='Скорость виртуального лидера')
+    plt.ylabel('Скорость, м/с')
+    plt.xlabel('Время, с')
+    plt.legend(handles=[min_v, mas_v], loc=2)
+    plt.savefig('text/minion/heviside_velocity.png', bbox_inches='tight')
+    plt.clf()
+
+    plt.axhline(0, color='grey', linestyle='--', alpha=0.8)
+    velocities_diff = [(minion - mast).x for mast, minion in zip(tp.minions[0].story.velocities[:-1], master.story.velocities[1:])]
+    v_err, = plt.plot(times[:-1], velocities_diff, 'k', label='Отклонение скорости\nминьона от скорости\nвиртуального лидера')
+    plt.ylabel('Отклонение скорости, м/с')
+    plt.xlabel('Время, с')
+    plt.legend(handles=[v_err], loc=1)
+    plt.savefig('text/minion/heviside_velerr.png', bbox_inches='tight')
+    plt.clf()
+
+    plt.axhline(0, color='grey', linestyle='--', alpha=0.8)
+    velocities_diff = [(minion - mast).x for mast, minion in zip(tp.minions[0].story.accelerations, master.story.accelerations)]
+    ac_err, = plt.plot(times, velocities_diff, 'k', label='Отклонение ускорения\nминьона от ускорения\nвиртуального лидера')
+    plt.ylabel('Отклонение ускорения, м/с^2')
+    plt.xlabel('Время, с')
+    plt.legend(handles=[ac_err], loc=1)
+    plt.savefig('text/minion/heviside_axerr.png', bbox_inches='tight')
+    plt.clf()
 
 
-def sim2():
+def platoon_sim():
     points = [V(0, 0), V(-100, -100), V(100, -100)]
     orientation = V(0, 1)
     relations = [None, 0, 0]
@@ -30,27 +83,26 @@ def sim2():
     for t in times:
         tp.update()
 
-    # # Траектория с миньонами
-    # traj,  = plt.plot([p.x for p in trajectory], [p.y for p in trajectory], 'bo', alpha=0.2, label='Траектория')
-    # track, = plt.plot([p.x for p in tp.master.story.positions], [p.y for p in tp.master.story.positions], 'black', label='Мастер')
-    # track2, = plt.plot([p.x for p in tp.minions[0].story.positions], [p.y for p in tp.minions[0].story.positions], 'green', label='Миньоны')
-    # track3, = plt.plot([p.x for p in tp.minions[1].story.positions], [p.y for p in tp.minions[1].story.positions], 'green')
-    # s, = plt.plot(tp.master.story.positions[0].x, tp.master.story.positions[0].y, 'k>', label='Исходная точка')
-    # f, = plt.plot(tp.master.story.positions[-1].x, tp.master.story.positions[-1].y, 'ko', label='Конечная точка')
-    # s, = plt.plot(tp.minions[0].story.positions[0].x, tp.minions[0].story.positions[0].y, 'k>', label='Исходная точка')
-    # f, = plt.plot(tp.minions[0].story.positions[-1].x, tp.minions[0].story.positions[-1].y, 'ko', label='Конечная точка')
-    # s, = plt.plot(tp.minions[1].story.positions[0].x, tp.minions[1].story.positions[0].y, 'k>', label='Исходная точка')
-    # f, = plt.plot(tp.minions[1].story.positions[-1].x, tp.minions[1].story.positions[-1].y, 'ko', label='Конечная точка')
-    # plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, track, track2], loc=2)
-    # plt.ylabel('Координата $y$, м')
-    # plt.xlabel('Координата $x$, м')
-    # plt.axis('equal')
-    # plt.savefig('text/platoon-trajectory-0.png', bbox_inches='tight')
-    # plt.clf()
+    # Траектория с миньонами
+    traj,  = plt.plot([p.x for p in trajectory], [p.y for p in trajectory], 'bo', alpha=0.2, label='Траектория')
+    track, = plt.plot([p.x for p in tp.master.story.positions], [p.y for p in tp.master.story.positions], 'black', label='Мастер')
+    track2, = plt.plot([p.x for p in tp.minions[0].story.positions], [p.y for p in tp.minions[0].story.positions], 'green', label='Миньоны')
+    track3, = plt.plot([p.x for p in tp.minions[1].story.positions], [p.y for p in tp.minions[1].story.positions], 'green')
+    s, = plt.plot(tp.master.story.positions[0].x, tp.master.story.positions[0].y, 'k>', label='Исходная точка')
+    f, = plt.plot(tp.master.story.positions[-1].x, tp.master.story.positions[-1].y, 'ko', label='Конечная точка')
+    s, = plt.plot(tp.minions[0].story.positions[0].x, tp.minions[0].story.positions[0].y, 'k>', label='Исходная точка')
+    f, = plt.plot(tp.minions[0].story.positions[-1].x, tp.minions[0].story.positions[-1].y, 'ko', label='Конечная точка')
+    s, = plt.plot(tp.minions[1].story.positions[0].x, tp.minions[1].story.positions[0].y, 'k>', label='Исходная точка')
+    f, = plt.plot(tp.minions[1].story.positions[-1].x, tp.minions[1].story.positions[-1].y, 'ko', label='Конечная точка')
+    plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, track, track2], loc=2)
+    plt.ylabel('Координата $y$, м')
+    plt.xlabel('Координата $x$, м')
+    plt.axis('equal')
+    plt.savefig('text/platoon-trajectory-0.png', bbox_inches='tight')
+    plt.clf()
 
 
-
-def sim1():
+def master_sim():
     points = [V(0, 0), V(-100, -100), V(100, -100)]
     orientation = V(0, 1)
     relations = [None, 0, 0]
@@ -129,3 +181,7 @@ def sim1():
     plt.axis('equal')
     plt.savefig('text/master-trajectory-changes-2.png', bbox_inches='tight')
     plt.clf()
+
+
+if __name__ == '__main__':
+    minion_sim()

@@ -7,7 +7,7 @@ DELTA_T = 0.1
 
 
 class Agent:
-    PID = (0.4, 0.4, 1)
+    PID = (0.4, 0.4, 0.01)
     MAX_FORCE = 40
 
     def __init__(self, position=None):
@@ -26,9 +26,11 @@ class Agent:
         return (self.velocity * (-0.1))
 
     def update(self):
-        self.story.add(self.position, self.velocity, self.acceleration)
+        force = self.force()
 
-        self.acceleration = (self.force()) / self.mass
+        self.story.add(self.position, self.velocity, self.acceleration, force   )
+
+        self.acceleration = force / self.mass
         self.velocity = self.velocity + self.acceleration * DELTA_T
         self.position = self.position + self.velocity * DELTA_T
 
@@ -132,17 +134,29 @@ class PlatoonStruct:
 
 class TargetAgent(Agent):
     """Агент, напрямую следующий к точке"""
+    PID = (0.6, 1.3, 0.1)
+
     def __init__(self, position=None):
         super().__init__(position)
         self.target = self.position
+        self.dist_sum = V(0, 0)
+        self.vel_sum = V(0, 0)
 
     def update_target(self, target):
+        self.d_story['target'].append(self.target)
         self.target = target
 
     def force(self):
         full_force = V(0, 0)
-        full_force += (self.target - self.position) * self.PID[0]
-        full_force += self.velocity * self.PID[1] * (-1)
+        dist = self.target - self.position
+        full_force += dist * self.PID[0]
+
+        target_velocity = (self.target - self.d_story['target'][-1]) / DELTA_T
+        velocity_diff = target_velocity - self.velocity
+
+        self.dist_sum += dist * DELTA_T
+        full_force += self.dist_sum * self.PID[2]
+        full_force += velocity_diff * self.PID[1]
         return full_force
 
 

@@ -87,11 +87,13 @@ class Story:
         self.positions = []
         self.velocities = []
         self.accelerations = []
+        self.forces = []
 
-    def add(self, position, velocity, acceleration):
+    def add(self, position, velocity, acceleration, force):
         self.positions.append(position)
         self.velocities.append(velocity)
         self.accelerations.append(acceleration)
+        self.forces.append(force)
 
 
 class RV:
