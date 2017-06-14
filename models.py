@@ -1,7 +1,6 @@
 from base import V, RV, Story, angle, point_vector_distance, index_of_closest_position, norm
 import math
 from collections import defaultdict
-from structs import PlatoonStruct
 
 
 DELTA_T = 0.1
@@ -37,17 +36,17 @@ class Agent:
 
 
 class TrajectoryAgent(Agent):
-    def __init__(self, trajectory, velocity=None):
+    def __init__(self, trajectory, velocity=None, position=None):
         # Условие необходимое для корректного 
         # определения current_orientation у строя
         assert len(trajectory) >= 2 
         self.trajectory = trajectory
         self.current_position = 0
         self.desired_velocity = velocity or 60
-        super().__init__(position=trajectory[0])
+        position = position or trajectory[0]
+        super().__init__(position=position)
 
         self.prev = V(0, 0)
-
 
     def force(self):
         cur_point = self.trajectory[self.current_position]
@@ -68,6 +67,7 @@ class TrajectoryAgent(Agent):
             full_force = to_final * self.PID[0] / 2.2 - self.velocity * self.PID[1] 
         if abs(full_force) > self.MAX_FORCE:
             full_force = norm(full_force) * self.MAX_FORCE
+        print('force=', full_force)
         return full_force
 
     def update_current_position(self):
@@ -123,51 +123,53 @@ class TargetAgent(Agent):
         return full_force
 
 
-class TrajectoryPlatoon:
-    def __init__(self, master, minions, platoon_struct):
-        """
-        master имеет класс TrajectoryAgent
-        minion имеет класс TargetAgent
-        """
-        self.master = master
-        self.minions = minions
-        self.ps = platoon_struct
+class FlexAgent(Agent):
+    """Агент, который при необходимости может становиться мастером и миньоном"""
+    def __init__(self, trajectory, desired_velocity, position=None):
+        super().__init__(position)
 
-        self.minions_errors = [[] for _ in range(len(self.minions))]
-        self.targets = [[] for _ in range(len(self.minions))]
-        assert 1 + len(minions) == len(platoon_struct)
+        # Идентефикатор: будет учавствовать в разрешении
+        # спорных ситуаций между агентами
+        self.id = None
 
-        # Агенты изначально должны находиться в позициях target
-        for i in range(len(self.minions)):
-            target = self.calculate_target_for_minion(minion_order=i + 1)
-            self.minions[i].target = target
-            self.minions[i].position = target
+        self.trajectory = trajectory
+        self.desired_velocity = desired_velocity
 
-    @property
-    def current_orientation(self):
-        return self.master.current_orientation
+        self.trajectory_agent = None
+        self.target_agent = None
+        self.is_master = False
 
-    @property
-    def current_angle(self):
-        return angle(self.ps.orientation, self.current_orientation)
+    def switch_to_master(self):
+        self.is_master = True
+        self.trajectory_agent = TrajectoryAgent(
+            trajectory=self.trajectory,
+            velocity=self.desired_velocity,
+            position=self.position
+        )
+        closest_tr_pos = index_of_closest_position(self.trajectory_agent, self.trajectory_agent.trajectory)
+        print(closest_tr_pos)
+        self.trajectory_agent.current_position = closest_tr_pos
 
-    def calculate_target_for_minion(self, minion_order):
-        relative_position = self.ps.relative_positions[minion_order]
-        ps_agents = [self.master] + self.minions
-        local_master = ps_agents[self.ps.relations[minion_order]]
-        full_phi = self.current_angle + relative_position.phi
-        sin = math.sin(full_phi)
-        cos = math.cos(full_phi)
-        target = local_master.position + \
-                 norm(V(self.ps.orientation.x * cos  + self.ps.orientation.y * sin, 
-                        -self.ps.orientation.x * sin  + self.ps.orientation.y * cos)) * relative_position.r
-        return target
+    def update_under_agent(self):
+        """Приводит состояние подагента в тоже состояние, что и реальный агент"""
+        if self.is_master:
+            self.trajectory_agent.position = self.position
+            self.trajectory_agent.velocity = self.velocity
+            self.trajectory_agent.acceleration = self.acceleration
+            self.trajectory_agent.update_current_position()
+        else:
+            self.target_agent.position = self.position
+            self.target_agent.velocity = self.velocity
+            self.target_agent.acceleration = self.acceleration
 
-    def update(self):
-        self.master.update()
-        for i in range(len(self.minions)):
-            self.minions_errors[i].append(abs(self.minions[i].target - self.minions[i].position))
-            self.targets[i].append(self.minions[i].target)
-            target = self.calculate_target_for_minion(minion_order=i + 1)
-            self.minions[i].update_target(target)
-            self.minions[i].update()
+    def switch_to_minion(self):
+        self.is_master = False
+        self.target_agent = TargetAgent(self.position)
+        self.target_agent.update_target(V(0, 0))
+
+    def force(self):
+        self.update_under_agent()
+        if self.is_master:
+            return self.trajectory_agent.force()
+        else:
+            return self.target_agent.force()

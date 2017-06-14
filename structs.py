@@ -38,3 +38,27 @@ class PlatoonStruct:
     def __len__(self):
         assert len(self.points) == len(self.relations)
         return len(self.points)
+
+
+class PlatoonFullStruct:
+    """Структура содержащая все связи"""
+    def __init__(self, points, orientation):
+        self.points = points
+        self.orientation = orientation
+        self.relative_positions = self.build_relative_positions()
+
+    def build_relative_positions(self):
+        relative_positions = [[None for _ in range(len(self.points))] for _ in range(len(self.points))]
+        for i in range(len(relative_positions)):
+            for j in range(len(relative_positions[i])):
+                if i == j:
+                    continue
+                master_point = self.points[j]
+                point = self.points[i]
+                r = abs(point - master_point)
+                phi = angle(point - master_point, self.orientation)
+                relative_positions[i][j] = RV(r, phi)
+        return relative_positions
+
+    def __len__(self):
+        return len(self.points)
