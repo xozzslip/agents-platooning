@@ -6,7 +6,8 @@ import matplotlib
 import math
 import matplotlib.pyplot as plt
 from base import RV, V, angle, to_degree, norm
-from models import PlatoonStruct, TargetAgent, TrajectoryAgent, TrajectoryPlatoon
+from models import TargetAgent, TrajectoryAgent, TrajectoryPlatoon
+from structs import PlatoonStruct
 from agents import DiracAgent, HeavisideAgent, Target1DAgent
 from matplotlib.legend_handler import HandlerLine2D
 

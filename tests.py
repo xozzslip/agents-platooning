@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 from base import RV, V, angle, to_degree, norm
-from models import PlatoonStruct, TargetAgent, TrajectoryAgent, TrajectoryPlatoon
+from models import TargetAgent, TrajectoryAgent, TrajectoryPlatoon
+from structs import PlatoonStruct
 
 
 class TestBase(unittest.TestCase):
