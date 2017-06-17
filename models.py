@@ -1,4 +1,5 @@
-from base import V, RV, Story, angle, point_vector_distance, index_of_closest_position, norm
+from base import (V, RV, Story, angle, point_vector_distance, index_of_closest_position, norm,
+    noneg)
 import math
 from collections import defaultdict
 
@@ -60,7 +61,7 @@ class TrajectoryAgent(Agent):
             full_force += vector_to_traj * 1.5
             full_force += (vector_to_traj - self.prev) * 30
             self.prev = vector_to_traj
-            full_force += norm(to_next_point_force) * abs(velocity_diff) * self.PID[0]
+            full_force += norm(to_next_point_force) * noneg(velocity_diff) * self.PID[0]
             full_force += self.acceleration * self.PID[1] * (-1)
         else:
             to_final = self.trajectory[-1] - self.position
@@ -146,7 +147,6 @@ class FlexAgent(Agent):
             position=self.position
         )
         closest_tr_pos = index_of_closest_position(self.trajectory_agent, self.trajectory_agent.trajectory)
-        print(closest_tr_pos)
         self.trajectory_agent.current_position = closest_tr_pos
 
     def update_under_agent(self):

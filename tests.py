@@ -46,11 +46,8 @@ class TestPlatoonStruct(unittest.TestCase):
         ps = PlatoonStruct(points, orientation, relations)
 
         relative_position = ps.relative_positions[1]
-        # print(relative_position)
         sin = math.sin(relative_position.phi)
         cos = math.cos(relative_position.phi)
-        # print(points[0] + V(ps.orientation.x * cos  - ps.orientation.y * sin, 
-        #                   ps.orientation.x * sin  + ps.orientation.y * cos) * relative_position.r)
 
 
 class TestTrajectoryPlatoon(unittest.TestCase):
@@ -83,20 +80,20 @@ class TestFlexPlatoon(unittest.TestCase):
         trajectory = [V(math.cos(0.01 * x) * 100, math.sin(0.01 * x) * 100) for x in np.arange(0, 300, 10)]
         fa = FlexAgent(
             trajectory=trajectory,
-            desired_velocity=5,
+            desired_velocity=12,
             position=V(100, 150)
         )
         fa.switch_to_master()
 
-        for _ in range(400):
+        for _ in range(350):
             fa.update()
 
-        traj,  = plt.plot([p.x for p in trajectory], [p.y for p in trajectory], 'bo', alpha=0.2, label='Траектория')
-        track, = plt.plot([p.x for p in fa.story.positions], [p.y for p in fa.story.positions], 'black', label='Мастер')
-        plt.axis('equal')
-        plt.show()
+        # traj,  = plt.plot([p.x for p in trajectory], [p.y for p in trajectory], 'bo', alpha=0.2, label='Траектория')
+        # track, = plt.plot([p.x for p in fa.story.positions], [p.y for p in fa.story.positions], 'black', label='Мастер')
+        # plt.axis('equal')
+        # plt.show()
 
         # Расстояние от текущей позиции до конечной точки траейтории мало
-        # self.assertLess(abs(fa.position - trajectory[-1]), 1)
+        self.assertLess(abs(fa.position - trajectory[-1]), 10)
 
        

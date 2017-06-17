@@ -136,3 +136,9 @@ def index_of_closest_position(agent, desired_struct):
             min_dist = abs(desired_struct[i] - agent.position)
             min_indx = i
     return min_indx
+
+
+def noneg(x):
+    if x < 0:
+        return 0
+    return x
