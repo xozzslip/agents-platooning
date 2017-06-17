@@ -60,14 +60,13 @@ class TrajectoryAgent(Agent):
             full_force += vector_to_traj * 1.5
             full_force += (vector_to_traj - self.prev) * 30
             self.prev = vector_to_traj
-            full_force += norm(to_next_point_force) * velocity_diff * self.PID[0]
+            full_force += norm(to_next_point_force) * abs(velocity_diff) * self.PID[0]
             full_force += self.acceleration * self.PID[1] * (-1)
         else:
             to_final = self.trajectory[-1] - self.position
             full_force = to_final * self.PID[0] / 2.2 - self.velocity * self.PID[1] 
         if abs(full_force) > self.MAX_FORCE:
             full_force = norm(full_force) * self.MAX_FORCE
-        print('force=', full_force)
         return full_force
 
     def update_current_position(self):

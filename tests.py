@@ -88,7 +88,7 @@ class TestFlexPlatoon(unittest.TestCase):
         )
         fa.switch_to_master()
 
-        for _ in range(100):
+        for _ in range(400):
             fa.update()
 
         traj,  = plt.plot([p.x for p in trajectory], [p.y for p in trajectory], 'bo', alpha=0.2, label='Траектория')
