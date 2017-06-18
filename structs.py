@@ -1,4 +1,5 @@
-from base import V, RV, Story, angle, point_vector_distance, index_of_closest_position, norm
+from base import (V, RV, Story, angle, point_vector_distance, 
+    index_of_closest_position, norm, centrize_plist)
 import math
 from collections import defaultdict
 
@@ -43,7 +44,7 @@ class PlatoonStruct:
 class PlatoonFullStruct:
     """Структура содержащая все связи"""
     def __init__(self, points, orientation):
-        self.points = points
+        self.points = centrize_plist(points)
         self.orientation = orientation
         self.relative_positions = self.build_relative_positions()
 

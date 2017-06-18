@@ -88,7 +88,6 @@ class TrajectoryAgent(Agent):
         if abs(self.velocity) < 0.001:
             return tr[cur_pos + 1] - tr[cur_pos]
         return self.velocity
-        
 
     def update(self):
         super().update()
@@ -120,6 +119,8 @@ class TargetAgent(Agent):
         self.dist_sum += dist * DELTA_T
         full_force += self.dist_sum * self.PID[2]
         full_force += velocity_diff * self.PID[1]
+        if abs(full_force) > self.MAX_FORCE:
+            full_force = norm(full_force) * self.MAX_FORCE
         return full_force
 
 
@@ -138,6 +139,8 @@ class FlexAgent(Agent):
         self.trajectory_agent = None
         self.target_agent = None
         self.is_master = False
+
+        self.sensetivity_r = 100
 
     def switch_to_master(self):
         self.is_master = True
@@ -161,10 +164,15 @@ class FlexAgent(Agent):
             self.target_agent.velocity = self.velocity
             self.target_agent.acceleration = self.acceleration
 
-    def switch_to_minion(self):
+    def switch_to_minion(self, target):
         self.is_master = False
         self.target_agent = TargetAgent(self.position)
-        self.target_agent.update_target(V(0, 0))
+        self.target_agent.target = target
+
+    def update_target(self, target):
+        if self.is_master:
+            raise Exception("cant update target for master")
+        self.target_agent.update_target(target)
 
     def force(self):
         self.update_under_agent()
@@ -172,3 +180,6 @@ class FlexAgent(Agent):
             return self.trajectory_agent.force()
         else:
             return self.target_agent.force()
+
+    def __repr__(self):
+        return "<A{}({}, {})>".format(self.id, self.position.x, self.position.y)

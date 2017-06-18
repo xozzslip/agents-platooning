@@ -138,6 +138,24 @@ def index_of_closest_position(agent, desired_struct):
     return min_indx
 
 
+def abstract_index_of_closest_position(p, p_list):
+    min_dist, min_indx = math.inf, None
+    for i in range(len(p_list)):
+        if abs(p_list[i] - p) < min_dist:
+            min_dist = abs(p_list[i] - p)
+            min_indx = i
+    return min_indx
+
+
+def centrize_plist(p_list):
+    center_of_struct = find_center_of_struct(p_list)
+    return [p - center_of_struct for p in p_list]
+
+
+def find_center_of_struct(p_list):
+    return sum(p_list, V(0, 0)) / len(p_list)
+
+
 def noneg(x):
     if x < 0:
         return 0
