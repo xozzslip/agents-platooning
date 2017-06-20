@@ -6,11 +6,11 @@ import matplotlib
 import math
 import matplotlib.pyplot as plt
 from base import RV, V, angle, to_degree, norm
-from models import TargetAgent, TrajectoryAgent
-from structs import PlatoonStruct
+from models import TargetAgent, TrajectoryAgent, FlexAgent
+from structs import PlatoonStruct, PlatoonFullStruct
 from agents import DiracAgent, HeavisideAgent, Target1DAgent
 from matplotlib.legend_handler import HandlerLine2D
-from platoons import TrajectoryPlatoon
+from platoons import TrajectoryPlatoon, FlexTrajectoryPlatoon
 
 
 def minion_sim():
@@ -185,5 +185,40 @@ def master_sim():
     plt.clf()
 
 
+def flex_platoon_sim():
+    points = [V(0, 0), V(5, 0), V(-5, 0), V(-10, 0), V(10, 0), V(0, -15)]
+    orientation = V(0, 1)
+    ps = PlatoonFullStruct(points, orientation)
+
+    # Траектория — полукруг
+    tr = [V(math.sin(0.01 * x) * 100, math.cos(0.01 * x) * 100) for x in np.arange(0, 300, 10)]
+    des_v = 5
+    agents_positions = [V(-15, 95), V(-9, 107), V(-22, 90), V(-25, 89), V(-30, 110), V(-15, 100)]
+    agents = [FlexAgent(tr, des_v, p) for p in agents_positions]
+
+    ftp = FlexTrajectoryPlatoon(agents, ps)
+
+    ftp.switch()
+
+    agents_track = [[] for _ in range(len(ftp.agents))]
+    for _ in range(300):
+        ftp.update()
+
+    for _ in range(4):
+        ftp.agents[2].set_external_force(V(230, 0))
+        ftp.switch()
+        ftp.update()
+
+    ftp.switch()
+    for _ in range(500):
+        ftp.update()
+
+
+    traj,  = plt.plot([p.x for p in tr], [p.y for p in tr], 'bo', alpha=0.2, label='Траектория')
+    for i in range(len(ftp.agents)):
+        track, = plt.plot([p.x for p in ftp.agents[i].story.positions], [p.y for p in ftp.agents[i].story.positions])
+    plt.axis('equal')
+    plt.show()
+
 if __name__ == '__main__':
-    minion_sim()
+    flex_platoon_sim()

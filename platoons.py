@@ -119,7 +119,10 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
                      norm(V(self.ps.orientation.x * cos  + self.ps.orientation.y * sin, 
                             -self.ps.orientation.x * sin  + self.ps.orientation.y * cos)) * rel.r
             targets.append(target)
-        return sum(targets, V(0, 0)) / len(targets)
+        if not targets:
+            return agent.position
+        else:
+            return sum(targets, V(0, 0)) / len(targets)
 
     @property
     def master(self):
