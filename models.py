@@ -58,8 +58,12 @@ class TrajectoryAgent(Agent):
             to_next_point_force = next_point - self.position
             velocity_diff = self.desired_velocity - abs(self.velocity)
             full_force = V(0, 0)
-            full_force += vector_to_traj * 1.5
             full_force += (vector_to_traj - self.prev) * 30
+            if abs(vector_to_traj) > 50:
+                full_force += norm(vector_to_traj) * 1.5
+            else:
+                full_force += vector_to_traj * 1.5
+            
             self.prev = vector_to_traj
             full_force += norm(to_next_point_force) * noneg(velocity_diff) * self.PID[0]
             full_force += self.acceleration * self.PID[1] * (-1)
@@ -97,6 +101,7 @@ class TrajectoryAgent(Agent):
 class TargetAgent(Agent):
     """Агент, напрямую следующий к точке"""
     PID = (0.6, 1.3, 0.1)
+    MAX_FORCE = 40
 
     def __init__(self, position=None):
         super().__init__(position)
@@ -113,7 +118,10 @@ class TargetAgent(Agent):
         dist = self.target - self.position
         full_force += dist * self.PID[0]
 
-        target_velocity = (self.target - self.d_story['target'][-1]) / DELTA_T
+        if self.d_story['target']:
+            target_velocity = (self.target - self.d_story['target'][-1]) / DELTA_T
+        else:
+            target_velocity = V(0, 0)
         velocity_diff = target_velocity - self.velocity
 
         self.dist_sum += dist * DELTA_T
@@ -139,6 +147,7 @@ class FlexAgent(Agent):
         self.trajectory_agent = None
         self.target_agent = None
         self.is_master = False
+        self.master = None
 
         self.sensetivity_r = 100
         self._external_force = V(0, 0)
@@ -165,10 +174,9 @@ class FlexAgent(Agent):
             self.target_agent.velocity = self.velocity
             self.target_agent.acceleration = self.acceleration
 
-    def switch_to_minion(self, target):
+    def switch_to_minion(self):
         self.is_master = False
         self.target_agent = TargetAgent(self.position)
-        self.target_agent.target = target
 
     def update_target(self, target):
         if self.is_master:
@@ -194,4 +202,4 @@ class FlexAgent(Agent):
         return self.internal_force() + self.external_force()
 
     def __repr__(self):
-        return "<A{}({}, {})>".format(self.id, self.position.x, self.position.y)
+        return "<A{0}({1}, {2})>".format(self.id, int(self.position.x), int(self.position.y))

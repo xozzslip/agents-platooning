@@ -186,14 +186,14 @@ def master_sim():
 
 
 def flex_platoon_sim():
-    points = [V(0, 0), V(5, 0), V(-5, 0), V(-10, 0), V(10, 0), V(0, -15)]
+    points = [V(0, 0), V(5, 0), V(-5, 0), V(-10, 0), V(10, 0)]
     orientation = V(0, 1)
     ps = PlatoonFullStruct(points, orientation)
 
     # Траектория — полукруг
     tr = [V(math.sin(0.01 * x) * 100, math.cos(0.01 * x) * 100) for x in np.arange(0, 300, 10)]
     des_v = 5
-    agents_positions = [V(-15, 95), V(-9, 107), V(-22, 90), V(-25, 89), V(-30, 110), V(-15, 100)]
+    agents_positions = [V(-9, 107), V(-22, 90), V(-25, 89), V(-30, 110), V(-15, 100)]
     agents = [FlexAgent(tr, des_v, p) for p in agents_positions]
 
     ftp = FlexTrajectoryPlatoon(agents, ps)
@@ -201,16 +201,19 @@ def flex_platoon_sim():
     ftp.switch()
 
     agents_track = [[] for _ in range(len(ftp.agents))]
-    for _ in range(300):
+    for _ in range(100):
         ftp.update()
 
-    for _ in range(4):
-        ftp.agents[2].set_external_force(V(230, 0))
-        ftp.switch()
+    for _ in range(1):
+        ftp.agents[-5].set_external_force(V(1100, 1100))
+        ftp.agents[-3].set_external_force(V(1100, 1100))
         ftp.update()
 
-    ftp.switch()
-    for _ in range(500):
+    for i in range(2000):
+        if i % 10 == 0:
+
+            ftp.switch()
+            print(ftp.groups)
         ftp.update()
 
 

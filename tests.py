@@ -194,3 +194,12 @@ class TestFlexTrajPlatoon(unittest.TestCase):
         track, = plt.plot([p.x for p in agents_track[2]], [p.y for p in agents_track[2]], 'black', label='Мастер')
         plt.axis('equal')
         plt.show()
+
+    def test_split_groups(self):
+        ag1 = [V(700, 800), V(0, 0), V(300, 300), V(305, 305), V(1, 1), V(2, 2)]
+        agents = [FlexAgent(self.tr, 5, p) for p in ag1]
+        self.ftp.agents = agents
+        groups = self.ftp.split_to_groups()
+        self.assertEqual(len(groups[0]), 1)
+        self.assertEqual(len(groups[1]), 3)
+        self.assertEqual(len(groups[2]), 2)

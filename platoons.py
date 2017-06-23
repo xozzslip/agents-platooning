@@ -1,5 +1,5 @@
 from base import (V, RV, Story, angle, point_vector_distance, index_of_closest_position, 
-    norm, abstract_index_of_closest_position, to_degree, centrize_plist)
+    norm, abstract_index_of_closest_position, to_degree, centrize_plist, rotate_struct)
 import math
 from collections import defaultdict
 from structs import PlatoonStruct
@@ -60,39 +60,43 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
         """
         Агенты — flex
         """
-        self.agents = agents
-        self.sorted_agents = agents
+        self.agents = enumerate_angents(agents)
+        self.groups = None
         self.ps = ps
 
-    def reenumerate_agents(self):
-        """
-        Каждая точка структуры выдаётся какому-то агенту.
-        Структура должна быть заполнена в том порядке, в каком
-        желательно её заполнение.
+    def enumerate_angents(self, agents):
+        for i in range(len(agents)):
+            agents[i] = i
+        return agents
 
-        Если точек больше, чем количесво агентов в данный момент, то
-        то будут заняты не все точки.
-        Если точек меньше, чем количество агентов, то не у каждого
-        агента будет ID.
-        """
-        for agent in self.agents:
-            agent.id = None
-        for i in range(min(len(self.ps.points), len(self.agents))):
-            point = self.ps.points[i]
-            # К какому агенту данная точка ближе всего?
-            free_agents = [agent for agent in self.agents if agent.id is None]
-            free_agents_positions = centrize_plist([agent.position for agent in free_agents])
-            ic = abstract_index_of_closest_position(point, free_agents_positions)
-            # ID этого агента будет номер точки в списке ps.points
-            free_agents[ic].id = i
+    def split_to_groups(self):
+        groups = []
+        for i in range(len(self.agents)):
+            in_group = False
+            for group in groups:
+                for ag in group:
+                    if abs(ag.position - self.agents[i].position) < self.agents[i].sensetivity_r:
+                        group.append(self.agents[i])
+                        in_group = True
+                        break
+                if in_group:
+                    break
+            if not in_group:
+                groups.append([self.agents[i]])
+        self.groups = groups
+        return groups
 
     def switch(self):
-        self.reenumerate_agents()
-        self.sorted_agents = sorted(self.agents, key=lambda x: x.id)
-        self.master.switch_to_master()
-        for minion in self.minions:
-            target = self.calculate_target_for_minion(minion)
-            minion.switch_to_minion(target)
+        groups = self.split_to_groups()
+        for group in groups:
+            master = group[0]
+            master.switch_to_master()
+            master.id = 0
+            for i in range(1, len(group)):
+                minion = group[i]
+                minion.switch_to_minion()
+                minion.master = group[0]
+                minion.id = i
 
     def influence_list(self, agent):
         other_agents = []
@@ -112,7 +116,8 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
         targets = []
         for infl_a in other_agents:
             rel = relations[infl_a.id]
-            full_phi = self.current_angle + rel.phi
+            current_angle = angle(self.ps.orientation, agent.master.trajectory_agent.current_orientation)
+            full_phi = current_angle + rel.phi
             sin = math.sin(full_phi)
             cos = math.cos(full_phi)
             target = infl_a.position + \
@@ -124,26 +129,12 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
         else:
             return sum(targets, V(0, 0)) / len(targets)
 
-    @property
-    def master(self):
-        return self.sorted_agents[0]
-
-    @property
-    def minions(self):
-        return self.sorted_agents[1:]
-
-    @property
-    def current_orientation(self):
-        return self.master.trajectory_agent.current_orientation
-
-    @property
-    def current_angle(self):
-        return angle(self.ps.orientation, self.current_orientation)
-
     def update(self):
-        self.master.update()
-        for i in range(len(self.minions)):
-            minion = self.minions[i]
-            target = self.calculate_target_for_minion(minion)
-            minion.update_target(target)
-            minion.update()
+        for group in self.groups:
+            master = group[0]
+            master.update()
+            for i in range(1, len(group)):
+                minion = group[i]
+                target = self.calculate_target_for_minion(minion)
+                minion.update_target(target)
+                minion.update()

@@ -156,6 +156,15 @@ def find_center_of_struct(p_list):
     return sum(p_list, V(0, 0)) / len(p_list)
 
 
+def rotate_struct(struct, angle):
+    rotated_struct = []
+    for p in struct: 
+        new_p_x = p.x * math.cos(angle) + p.y * math.sin(angle)
+        new_p_y = -p.x * math.sin(angle) + p.y * math.cos(angle)
+        rotated_struct.append(V(new_p_x, new_p_y))
+    return rotated_struct
+
+
 def noneg(x):
     if x < 0:
         return 0
