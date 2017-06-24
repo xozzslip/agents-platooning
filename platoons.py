@@ -71,41 +71,25 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
         return agents
 
     def split_to_groups(self):
-        for was_group in self.groups:
-            for i in range(len(was_group)):
-                agent = was_group[i]
-                if agent is None:
-                    continue
-                for group in self.groups:
-                    if self.is_close_agent_exists(agent, group):
-
-                        if agent not in group:
-                            agent.id = len(group)
-                            print(agent)
-                            was_group[i] = None
-                            group.append(agent)
-                            break
-                        else:
-                            break
-        groups = [[] for _ in range(len(self.groups))]
-        for i in range(len(self.groups)):
-            group = self.groups[i]
-            for agent in group:
-                if agent is not None:
-                    groups[i].append(agent)
-        self.groups = sorted(groups, key=lambda x: min([abs(agent.position - agent.trajectory[-1]) for agent in x], default=math.inf))
+        was_groups = self.groups
+        agents = [agent for group in self.groups for agent in group]
+        new_groups = [[] for i in range(len(self.agents))]
+        for agent in agents:
+            for group in new_groups:
+                if self.is_close_agent_exists(agent, group):
+                    agent.id = len(group)
+                    group.append(agent)
+                    break
+        self.groups = sorted(new_groups, key=lambda x: min([abs(agent.position - agent.trajectory[-1]) for agent in x], default=math.inf))
 
     def is_close_agent_exists(self, agent, group):
         for group_agent in group:
-            if group_agent is None:
-                continue
             if group_agent is agent:
                 continue
             if abs(agent.position - group_agent.position) < agent.sensetivity_r:
                 return True
         if not group:
             return True
-        print("KEKEK1")
         return False
 
     def switch(self):

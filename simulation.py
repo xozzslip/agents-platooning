@@ -205,11 +205,17 @@ def flex_platoon_sim():
         ftp.update()
 
     for _ in range(1):
-        ftp.agents[-5].set_external_force(V(1100, 1100))
-        ftp.agents[-1].set_external_force(V(1100, 1100))
+        ftp.agents[-5].set_external_force(V(500, 1100))
+        ftp.agents[-1].set_external_force(V(500, -1100))
         ftp.update()
 
-    for i in range(2000):
+    for i in range(1500):
+        if i % 5 == 0:
+
+            ftp.switch()
+        ftp.update()
+
+    for i in range(500):
         if i % 10 == 0:
 
             ftp.switch()
