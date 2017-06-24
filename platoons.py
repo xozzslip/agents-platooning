@@ -60,43 +60,74 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
         """
         Агенты — flex
         """
-        self.agents = enumerate_angents(agents)
-        self.groups = None
+        self.agents = self.enumerate_angents(agents)
+        self.groups = [[self.agents[i]] for i in range(len(self.agents))]
+        self.groups.sort(key=lambda x: min([abs(agent.position - agent.trajectory[-1]) for agent in x]))
         self.ps = ps
 
     def enumerate_angents(self, agents):
         for i in range(len(agents)):
-            agents[i] = i
+            agents[i].id = 0
         return agents
 
     def split_to_groups(self):
-        groups = []
-        for i in range(len(self.agents)):
-            in_group = False
-            for group in groups:
-                for ag in group:
-                    if abs(ag.position - self.agents[i].position) < self.agents[i].sensetivity_r:
-                        group.append(self.agents[i])
-                        in_group = True
-                        break
-                if in_group:
-                    break
-            if not in_group:
-                groups.append([self.agents[i]])
-        self.groups = groups
-        return groups
+        for was_group in self.groups:
+            for i in range(len(was_group)):
+                agent = was_group[i]
+                if agent is None:
+                    continue
+                for group in self.groups:
+                    if self.is_close_agent_exists(agent, group):
+
+                        if agent not in group:
+                            agent.id = len(group)
+                            print(agent)
+                            was_group[i] = None
+                            group.append(agent)
+                            break
+                        else:
+                            break
+        groups = [[] for _ in range(len(self.groups))]
+        for i in range(len(self.groups)):
+            group = self.groups[i]
+            for agent in group:
+                if agent is not None:
+                    groups[i].append(agent)
+        self.groups = sorted(groups, key=lambda x: min([abs(agent.position - agent.trajectory[-1]) for agent in x], default=math.inf))
+
+    def is_close_agent_exists(self, agent, group):
+        for group_agent in group:
+            if group_agent is None:
+                continue
+            if group_agent is agent:
+                continue
+            if abs(agent.position - group_agent.position) < agent.sensetivity_r:
+                return True
+        if not group:
+            return True
+        print("KEKEK1")
+        return False
 
     def switch(self):
-        groups = self.split_to_groups()
-        for group in groups:
-            master = group[0]
-            master.switch_to_master()
-            master.id = 0
-            for i in range(1, len(group)):
-                minion = group[i]
-                minion.switch_to_minion()
-                minion.master = group[0]
-                minion.id = i
+        self.split_to_groups()
+        for group in self.groups:
+            if len(group) > 0:
+                master = group[0]
+                master.switch_to_master()
+
+                for i in range(1, len(group)):
+                    minion = group[i]
+                    minion.switch_to_minion()
+                    minion.master = group[0]
+
+
+    def merge_groups(self, groups_was, groups_now):
+        main_group_was = self.what_is_main_group(groups_was)
+        main_group_now = self.what_is_main_group(groups_now)
+
+    def what_is_main_group(self, group):
+        return min(group, key=lambda x: min([abs(agent.position - agent.trajectory[-1]) for agent in x]))
+
 
     def influence_list(self, agent):
         other_agents = []
@@ -131,10 +162,11 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
 
     def update(self):
         for group in self.groups:
-            master = group[0]
-            master.update()
-            for i in range(1, len(group)):
-                minion = group[i]
-                target = self.calculate_target_for_minion(minion)
-                minion.update_target(target)
-                minion.update()
+            if len(group) > 0:
+                master = group[0]
+                master.update()
+                for i in range(1, len(group)):
+                    minion = group[i]
+                    target = self.calculate_target_for_minion(minion)
+                    minion.update_target(target)
+                    minion.update()

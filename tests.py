@@ -147,7 +147,7 @@ class TestFlexTrajPlatoon(unittest.TestCase):
         """
         points = [V(10, 10), V(22, 0), V(-22, -2)]
         orientation = V(0, 1)
-        ps = PlatoonFullStruct(points, orientation)
+        self.ps = PlatoonFullStruct(points, orientation)
 
         # Траектория — полукруг
         self.tr = [V(math.cos(0.01 * x) * 100, math.sin(0.01 * x) * 100) for x in np.arange(0, 300, 10)]
@@ -155,7 +155,7 @@ class TestFlexTrajPlatoon(unittest.TestCase):
         agents_positions = [V(-15, 3), V(-10, -10), V(1, 3)]
         agents = [FlexAgent(self.tr, des_v, p) for p in agents_positions]
 
-        self.ftp = FlexTrajectoryPlatoon(agents, ps)
+        self.ftp = FlexTrajectoryPlatoon(agents, self.ps)
 
     def test_enumeration(self):
         self.ftp.reenumerate_agents()
@@ -198,8 +198,14 @@ class TestFlexTrajPlatoon(unittest.TestCase):
     def test_split_groups(self):
         ag1 = [V(700, 800), V(0, 0), V(300, 300), V(305, 305), V(1, 1), V(2, 2)]
         agents = [FlexAgent(self.tr, 5, p) for p in ag1]
-        self.ftp.agents = agents
-        groups = self.ftp.split_to_groups()
-        self.assertEqual(len(groups[0]), 1)
-        self.assertEqual(len(groups[1]), 3)
-        self.assertEqual(len(groups[2]), 2)
+        self.ftp = FlexTrajectoryPlatoon(agents, self.ps)
+        self.ftp.split_to_groups()
+        groups = self.ftp.groups
+        self.assertEqual(len(groups[0]), 3)
+        self.assertEqual(len(groups[1]), 2)
+        self.assertEqual(len(groups[2]), 1)
+
+        print(groups)
+        agents[3].position = V(5, 5)
+        self.ftp.split_to_groups()
+        print(self.ftp.groups)
