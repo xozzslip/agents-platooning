@@ -231,14 +231,20 @@ def flex_platoon_sim():
 
     traj,  = plt.plot([p.x for p in tr], [p.y for p in tr], 'bo', alpha=0.2, label='Траектория')
     for i in range(len(ftp.agents)):
-        track, = plt.plot([p.x for p in ftp.agents[i].story.positions], [p.y for p in ftp.agents[i].story.positions], ls='-')
+        if i == 0:
+            master_tr, = plt.plot([p.x for p in ftp.agents[i].story.positions], [p.y for p in ftp.agents[i].story.positions], color='black', label='Мастер')
+        elif i == 4:
+            track, = plt.plot([p.x for p in ftp.agents[i].story.positions[0:501]], [p.y for p in ftp.agents[i].story.positions[0:501]], color='green')
+            track, = plt.plot([p.x for p in ftp.agents[i].story.positions[500:]], [p.y for p in ftp.agents[i].story.positions[500:]], color='black')
+        else:
+            minion_tr, = plt.plot([p.x for p in ftp.agents[i].story.positions], [p.y for p in ftp.agents[i].story.positions], color='green', label='Миньоны')
         s, = plt.plot(ftp.agents[i].story.positions[0].x, ftp.agents[i].story.positions[0].y, 'k.', label='Точки начала и\nконца движения')
         if not i == 0 and not i == 3:
             f, = plt.plot(ftp.agents[i].story.positions[-1].x, ftp.agents[i].story.positions[-1].y, 'k.', label='Конечная точка')
     f, = plt.plot(ftp.agents[0].story.positions[-1].x, ftp.agents[0].story.positions[-1].y, 'k*')
     f, = plt.plot(ftp.agents[3].story.positions[-1].x, ftp.agents[3].story.positions[-1].y, 'k*', label='Точки отказа')
     plt.axis('equal')
-    plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, s, f], loc=2)
+    plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, master_tr, minion_tr, s, f], loc=2)
     plt.savefig('text/platoon/with-crashes.png', bbox_inches='tight')
 
 if __name__ == '__main__':
