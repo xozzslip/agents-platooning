@@ -154,6 +154,7 @@ class FlexAgent(Agent):
         self.is_master = False
         self.is_minion = False
         self.master = None
+        self.is_active = True
 
         self.sensetivity_r = 100
         self._external_force = V(0, 0)
@@ -207,6 +208,10 @@ class FlexAgent(Agent):
         return ext_f
 
     def force(self):
+        if not self.is_active:
+            self.velocity = V(0, 0)
+            self.acceleration = V(0, 0)
+            return V(0, 0)
         return self.internal_force() + self.external_force()
 
     def __repr__(self):

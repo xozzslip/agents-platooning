@@ -191,9 +191,9 @@ def flex_platoon_sim():
     ps = PlatoonFullStruct(points, orientation)
 
     # Траектория — полукруг
-    tr = [V(math.sin(0.01 * x) * 100, math.cos(0.01 * x) * 100) for x in np.arange(0, 300, 10)]
+    tr = [V(math.sin(0.01 * x) * 100, math.cos(0.01 * x) * 100) for x in np.arange(0, 450, 10)]
     des_v = 5
-    agents_positions = [V(-9, 107), V(-22, 90), V(-25, 89), V(-30, 110), V(-15, 100)]
+    agents_positions = [V(-3, 100), V(-20, 110), V(-15, 120), V(5, 70), V(-15, 85)]
     agents = [FlexAgent(tr, des_v, p) for p in agents_positions]
 
     ftp = FlexTrajectoryPlatoon(agents, ps)
@@ -205,30 +205,41 @@ def flex_platoon_sim():
         ftp.update()
 
     for _ in range(2):
-        ftp.agents[-5].set_external_force(V(500, 555))
-        ftp.agents[-1].set_external_force(V(500, 555))
+        # ftp.agents[-5].set_external_force(V(500, 555))
+        # ftp.agents[-1].set_external_force(V(500, 555))
         ftp.update()
         ftp.switch()
 
-    for i in range(1500):
+    for i in range(400):
         if i % 5 == 0:
 
             ftp.switch()
         ftp.update()
 
-    for i in range(500):
-        if i % 10 == 0:
+    ftp.agents[0].is_active = False
+    ftp.switch()
+    
+    for i in range(270):  
+        ftp.update()
+    
+    ftp.agents[3].is_active = False
+    ftp.switch()
 
-            ftp.switch()
-            print(ftp.groups)
+    for i in range(200):  
         ftp.update()
 
 
     traj,  = plt.plot([p.x for p in tr], [p.y for p in tr], 'bo', alpha=0.2, label='Траектория')
     for i in range(len(ftp.agents)):
-        track, = plt.plot([p.x for p in ftp.agents[i].story.positions], [p.y for p in ftp.agents[i].story.positions])
+        track, = plt.plot([p.x for p in ftp.agents[i].story.positions], [p.y for p in ftp.agents[i].story.positions], ls='-')
+        s, = plt.plot(ftp.agents[i].story.positions[0].x, ftp.agents[i].story.positions[0].y, 'k.', label='Точки начала и\nконца движения')
+        if not i == 0 and not i == 3:
+            f, = plt.plot(ftp.agents[i].story.positions[-1].x, ftp.agents[i].story.positions[-1].y, 'k.', label='Конечная точка')
+    f, = plt.plot(ftp.agents[0].story.positions[-1].x, ftp.agents[0].story.positions[-1].y, 'k*')
+    f, = plt.plot(ftp.agents[3].story.positions[-1].x, ftp.agents[3].story.positions[-1].y, 'k*', label='Точки отказа')
     plt.axis('equal')
-    plt.show()
+    plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, s, f], loc=2)
+    plt.savefig('text/platoon/with-crashes.png', bbox_inches='tight')
 
 if __name__ == '__main__':
     flex_platoon_sim()

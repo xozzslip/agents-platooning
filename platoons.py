@@ -61,18 +61,32 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
         Агенты — flex
         """
         self.agents = self.enumerate_angents(agents)
-        self.groups = [[self.agents[i]] for i in range(len(self.agents))]
-        self.groups.sort(key=lambda x: min([abs(agent.position - agent.trajectory[-1]) for agent in x]))
         self.ps = ps
+        sort_agents = self.initsort_agents()
+        self.groups = [[sort_agents[i]] for i in range(len(self.agents))]
+        self.groups.sort(key=lambda x: min([abs(agent.position - agent.trajectory[0]) for agent in x]))
+        
 
     def enumerate_angents(self, agents):
         for i in range(len(agents)):
             agents[i].id = 0
         return agents
 
+    def initsort_agents(self):
+        result = [None for _ in range(len(self.agents))]
+        points = self.ps.points.copy()
+        for i in range(len(self.agents)):
+            agent = self.agents[i]
+            free_points = [point for point in points if point is not None]
+            ic = abstract_index_of_closest_position(agent.position, points)
+            points[ic] = None
+            result[ic] = agent
+        print(result)
+        return result 
+
     def split_to_groups(self):
         was_groups = self.groups
-        agents = [agent for group in self.groups for agent in group]
+        agents = [agent for group in self.groups for agent in group if agent.is_active]
         new_groups = [[] for i in range(len(self.agents))]
         for agent in agents:
             for group in new_groups:
@@ -80,7 +94,7 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
                     agent.id = len(group)
                     group.append(agent)
                     break
-        self.groups = sorted(new_groups, key=lambda x: len(x), reverse=True)
+        self.groups = sorted(new_groups, key=lambda x: min([abs(agent.position - agent.trajectory[-1]) for agent in x], default=math.inf))
 
     def is_close_agent_exists(self, agent, group):
         for group_agent in group:
@@ -105,8 +119,6 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
                     if not minion.is_minion:
                         minion.switch_to_minion()
                     minion.master = group[0]
-        for group in self.groups:
-            
 
 
     def merge_groups(self, groups_was, groups_now):
@@ -119,7 +131,7 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
 
     def influence_list(self, agent):
         other_agents = []
-        for a in self.agents:
+        for a in [agent for agent in self.agents if agent.is_active]:
             if (abs(a.position - agent.position) < agent.sensetivity_r
                 and a is not agent and agent.id > a.id):
                 other_agents.append(a)

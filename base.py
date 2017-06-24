@@ -141,6 +141,8 @@ def index_of_closest_position(agent, desired_struct):
 def abstract_index_of_closest_position(p, p_list):
     min_dist, min_indx = math.inf, None
     for i in range(len(p_list)):
+        if p_list[i] is None:
+            continue
         if abs(p_list[i] - p) < min_dist:
             min_dist = abs(p_list[i] - p)
             min_indx = i
