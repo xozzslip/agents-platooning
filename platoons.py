@@ -80,7 +80,7 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
                     agent.id = len(group)
                     group.append(agent)
                     break
-        self.groups = sorted(new_groups, key=lambda x: min([abs(agent.position - agent.trajectory[-1]) for agent in x], default=math.inf))
+        self.groups = sorted(new_groups, key=lambda x: len(x), reverse=True)
 
     def is_close_agent_exists(self, agent, group):
         for group_agent in group:
@@ -97,12 +97,16 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
         for group in self.groups:
             if len(group) > 0:
                 master = group[0]
-                master.switch_to_master()
+                if not master.is_master:
+                    master.switch_to_master()
 
                 for i in range(1, len(group)):
                     minion = group[i]
-                    minion.switch_to_minion()
+                    if not minion.is_minion:
+                        minion.switch_to_minion()
                     minion.master = group[0]
+        for group in self.groups:
+            
 
 
     def merge_groups(self, groups_was, groups_now):

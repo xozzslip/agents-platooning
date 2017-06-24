@@ -50,8 +50,13 @@ class TrajectoryAgent(Agent):
         self.prev = V(0, 0)
 
     def force(self):
+
         cur_point = self.trajectory[self.current_position]
-        if self.current_position + 1 < len(self.trajectory):
+        if abs(cur_point - self.position) > 30:
+            full_force = V(0, 0)
+            full_force += (cur_point - self.position) * self.PID[0]
+            full_force += self.velocity * (-1) * 10
+        elif self.current_position + 1 < len(self.trajectory):
             next_point = self.trajectory[self.current_position + 1]
             vector_to_traj = point_vector_distance(next_point, cur_point, self.position)
             self.d_story['vector_to_traj'].append(abs(vector_to_traj) * (1 if (next_point.x - cur_point.x) * (vector_to_traj.y - cur_point.y) - (next_point.y - cur_point.y) * (vector_to_traj.x - cur_point.x) >= 0 else -1))
@@ -147,6 +152,7 @@ class FlexAgent(Agent):
         self.trajectory_agent = None
         self.target_agent = None
         self.is_master = False
+        self.is_minion = False
         self.master = None
 
         self.sensetivity_r = 100
@@ -154,6 +160,7 @@ class FlexAgent(Agent):
 
     def switch_to_master(self):
         self.is_master = True
+        self.is_minion = False
         self.trajectory_agent = TrajectoryAgent(
             trajectory=self.trajectory,
             velocity=self.desired_velocity,
@@ -176,6 +183,7 @@ class FlexAgent(Agent):
 
     def switch_to_minion(self):
         self.is_master = False
+        self.is_minion = True
         self.target_agent = TargetAgent(self.position)
 
     def update_target(self, target):
