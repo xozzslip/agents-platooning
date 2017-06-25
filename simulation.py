@@ -361,9 +361,10 @@ def flex_platoon_simple_move2():
 
     agents_track = [[] for _ in range(len(ftp.agents))]
 
-    for i in range(1950):
+    for i in range(2700):
+        for agent in ftp.agents:
+            agent.set_external_force(V(0, -5))
         ftp.update()
-
 
     traj,  = plt.plot([p.x for p in tr], [p.y for p in tr], 'bo', alpha=0.2, label='Траектория')
     for i in range(len(ftp.agents)):
