@@ -185,7 +185,7 @@ def master_sim():
     plt.clf()
 
 
-def flex_platoon_sim():
+def flex_platoon_sim_crash():
     points = [V(0, 0), V(5, 0), V(-5, 0), V(-10, 0), V(10, 0)]
     orientation = V(0, 1)
     ps = PlatoonFullStruct(points, orientation)
@@ -247,5 +247,65 @@ def flex_platoon_sim():
     plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, master_tr, minion_tr, s, f], loc=2)
     plt.savefig('text/platoon/with-crashes.png', bbox_inches='tight')
 
+
+def flex_platoon_sim_bird():
+    points = [V(0, 0), V(5, 0), V(-5, 0), V(-10, 0), V(10, 0)]
+    orientation = V(0, 1)
+    ps = PlatoonFullStruct(points, orientation)
+
+    # Траектория — полукруг
+    tr = [V(math.sin(0.01 * x) * 100, math.cos(0.01 * x) * 100) for x in np.arange(0, 450, 10)]
+    des_v = 5
+    agents_positions = [V(-3, 100), V(-20, 110), V(-15, 120), V(5, 70), V(-15, 85)]
+    agents = [FlexAgent(tr, des_v, p) for p in agents_positions]
+
+    ftp = FlexTrajectoryPlatoon(agents, ps)
+
+    ftp.switch()
+
+    agents_track = [[] for _ in range(len(ftp.agents))]
+    for _ in range(300):
+        ftp.update()
+
+    for _ in range(4):
+        
+        ftp.agents[2].set_external_force(V(200, 40))
+        ftp.update()
+        ftp.switch()
+
+    for _ in range(4):
+        ftp.agents[1].set_external_force(V(200, -40))
+
+        ftp.update()
+        ftp.switch()
+
+
+    for i in range(400):
+        if i % 10 == 0:
+
+            ftp.switch()
+        ftp.update()
+    
+
+    for i in range(2000):
+        if i % 10 == 0:
+
+            ftp.switch()
+        ftp.update()
+
+
+    traj,  = plt.plot([p.x for p in tr], [p.y for p in tr], 'bo', alpha=0.2, label='Траектория')
+    for i in range(len(ftp.agents)):
+        if i == 1 or i == 2:
+            bird_tr, = plt.plot([p.x for p in ftp.agents[i].story.positions], [p.y for p in ftp.agents[i].story.positions], color='brown', label='Форсированные\nагенты')
+        else:
+            minion_tr, = plt.plot([p.x for p in ftp.agents[i].story.positions], [p.y for p in ftp.agents[i].story.positions], color='green', label='Агенты', ls='--', alpha=0.5)
+        s, = plt.plot(ftp.agents[i].story.positions[0].x, ftp.agents[i].story.positions[0].y, 'k.', label='Точки начала и\nконца движения')
+        f, = plt.plot(ftp.agents[i].story.positions[-1].x, ftp.agents[i].story.positions[-1].y, 'k.')
+    plt.axis('equal')
+    plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, minion_tr, bird_tr, s, f], loc=1)
+    plt.show()
+    # plt.savefig('text/platoon/with-bird.png', bbox_inches='tight')
+
 if __name__ == '__main__':
-    flex_platoon_sim()
+    flex_platoon_sim_bird()

@@ -81,7 +81,6 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
             ic = abstract_index_of_closest_position(agent.position, points)
             points[ic] = None
             result[ic] = agent
-        print(result)
         return result 
 
     def split_to_groups(self):
@@ -94,7 +93,7 @@ class FlexTrajectoryPlatoon(TrajectoryPlatoon):
                     agent.id = len(group)
                     group.append(agent)
                     break
-        self.groups = sorted(new_groups, key=lambda x: min([abs(agent.position - agent.trajectory[-1]) for agent in x], default=math.inf))
+        self.groups = sorted(new_groups, key=lambda x: len(x), reverse=True)
 
     def is_close_agent_exists(self, agent, group):
         for group_agent in group:

@@ -105,8 +105,8 @@ class TrajectoryAgent(Agent):
 
 class TargetAgent(Agent):
     """Агент, напрямую следующий к точке"""
-    PID = (0.6, 1.3, 0.1)
-    MAX_FORCE = 40
+    PID = (1, 1.5, 0.1)
+    MAX_FORCE = 50
 
     def __init__(self, position=None):
         super().__init__(position)
@@ -156,7 +156,7 @@ class FlexAgent(Agent):
         self.master = None
         self.is_active = True
 
-        self.sensetivity_r = 100
+        self.sensetivity_r = 50
         self._external_force = V(0, 0)
 
     def switch_to_master(self):
