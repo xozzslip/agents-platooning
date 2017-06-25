@@ -342,5 +342,40 @@ def flex_platoon_simple_move1():
     plt.show()
 
 
+def flex_platoon_simple_move2():
+    points = [V(0, 0), V(0, -5), V(0, -10), V(0, -15), V(0, -20), V(0, -25), V(0, -30), V(0, -35), V(0, -40)]
+    orientation = V(0, 1)
+    ps = PlatoonFullStruct(points, orientation)
+
+    a = 50
+    b = 100
+    #tr = [V(2* a * 1/math.tan(x), a * (1 - math.cos(2 * x))) for x in np.arange(0.3, 3, 0.1)]
+    tr = [V(a * x - b * math.sin(x), a - b * math.cos(x)) for x in np.arange(0, 20, 0.1)]
+    des_v = 15
+    agents_positions = [V(30, -50), V(40, -50), V(50, -50), V(60, -50), V(70, -50), V(80, -50), V(90, -50), V(100, -50), V(110, -50)]
+    agents = [FlexAgent(tr, des_v, p) for p in agents_positions]
+
+    ftp = FlexTrajectoryPlatoon(agents, ps)
+
+    ftp.switch()
+
+    agents_track = [[] for _ in range(len(ftp.agents))]
+
+    for i in range(1950):
+        ftp.update()
+
+
+    traj,  = plt.plot([p.x for p in tr], [p.y for p in tr], 'bo', alpha=0.2, label='Траектория')
+    for i in range(len(ftp.agents)):
+
+        bird_tr, = plt.plot([p.x for p in ftp.agents[i].story.positions], [p.y for p in ftp.agents[i].story.positions], color='green', label='Агенты', ls=':')
+    for i in range(len(ftp.agents)):
+        s, = plt.plot(ftp.agents[i].story.positions[0].x, ftp.agents[i].story.positions[0].y, 'k<', label='Исходные точки', markersize=5)
+        f, = plt.plot(ftp.agents[i].story.positions[-1].x, ftp.agents[i].story.positions[-1].y, 'ko', label='Конечные точки', markersize=5)
+    plt.axis('equal')
+    plt.legend(handler_map={traj: HandlerLine2D(numpoints=4)}, handles=[traj, bird_tr, s, f], loc=1)
+    plt.show()
+
+
 if __name__ == '__main__':
-    flex_platoon_simple_move1()
+    flex_platoon_simple_move2()

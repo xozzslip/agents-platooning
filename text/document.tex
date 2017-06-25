@@ -24,8 +24,49 @@
 \title{Управление движением группы мобильных роботов}
 
 \begin{document}
-	\maketitle
-	\tableofcontents
+	\thispagestyle{empty}
+\begin{center}%
+	МИНИСТЕРСТВО ОБРАЗОВАНИЯ И НАУКИ \\
+	РОССИЙСКОЙ ФЕДЕРАЦИИ \\
+	
+	Федеральное государственное автономное образовательное учреждение высшего образования \\
+	
+	Институт прикладной математики и механики \\
+	Кафедра «Механика и процессы управления»
+\end{center}%
+
+{\raggedleft
+	Работа допущена к защите\par
+	Зав. кафедрой д.ф.-м.н., проф. \par
+	\underline{\hspace{3.3cm}} Д.А. Индейцев \par
+	«\underline{\hspace{1cm}}» \underline{\hspace{4cm}} 2017 \par
+}
+\begin{center}
+	\textbf{БАКАЛАВРСКАЯ РАБОТА}
+	
+	\textbf{по направлению 15.03.03 — <<Прикладная Механика>>}
+\end{center}
+\begin{center}
+	\textbf {\large УПРАВЛЕНИЕ ДВИЖЕНИЕМ ГРУППЫ МОБИЛЬНЫХ РОБОТОВ}
+\end{center}%
+
+{\raggedleft
+	Выполнил: студент гр. 43602/3\par
+	\underline{\hspace{3.5cm}} Х.А. Хафизов \par
+	«\underline{\hspace{1cm}}» \underline{\hspace{4.0cm}} 2017 \par
+	Научный руководитель: проф.\par
+	\underline{\hspace{3.3cm}} С.Ф. Бурдаков\par
+	«\underline{\hspace{1cm}}» \underline{\hspace{4.0cm}} 2017 \par
+}
+\vfill
+
+\begin{center}%
+	{Санкт-Петербург \\ 2017}
+\end{center}%
+\newpage
+\setcounter{page}{1}
+\tableofcontents
+\newpage
 \section{Введение}
 Одной из основных целей мехатроники
 является создание автоматических устройств, которые могут заменить
@@ -464,7 +505,7 @@ $$\vec{O_{1}} =  \left(\begin{array}{cc} \cos{(b + \varphi_{53})} & \sin{(b + \v
 $$ \vec{A'_{5}} = \vec{A_3} + \frac{\vec{O_1}}{|\vec{O_1}|} r_{53}$$ 
 Если для миньона доступно больше агентов-лидеров, то виртуальный лидер будет, как уже говорилось выше, центром масс получаемых точек. Аналогичным образом каждый миньон рассчитывает своего виртуального лидера и за счёт стремления в эти точки и сохраняется структура строя.\par
 Резюмируя, алгоритм строевого движения заключается в том, что агенты связаны между собой. Мастер, двигаясь по траектории заставляет двигаться и всех миньонов, для которых он является лидером, а перемещение этих миньонов, приводит в движение следующий слой миньонов, для которых они являются лидерами. \par
-Результаты симуляции движения строя по разным траекториям без внешних возмущений изображены на рис. \ref{fig:platoon-trajectory-0} и \ref{fig:circle-platoon}. \par
+Результаты симуляции движения строя по разным траекториям без внешних возмущений изображены на рис. \ref{fig:platoon-trajectory-0}, \ref{fig:circle-platoon}.  и \ref{fig:line-platoon-cropped}\par
 \begin{figure}[!htbp]
 	\centering
 	\includegraphics[width=0.7\linewidth]{platoon-trajectory-0}
@@ -488,6 +529,14 @@ $$ \vec{A'_{5}} = \vec{A_3} + \frac{\vec{O_1}}{|\vec{O_1}|} r_{53}$$
 	\caption{Строй в форме окружности из 9-ти агентов с мастером в центре.}
 	\label{fig:circle-platoon}
 \end{figure}
+\begin{figure}
+	\centering
+	\includegraphics[width=1\linewidth]{platoon/line-platoon-cropped}
+	\caption{Прямой строй из 9-ти агентов. Мастером является впередиидущий агент.}
+	\label{fig:line-platoon-cropped}
+\end{figure}
+
+
 
 
 
@@ -529,7 +578,7 @@ $$ \vec{A'_{5}} = \vec{A_3} + \frac{\vec{O_1}}{|\vec{O_1}|} r_{53}$$
 \begin{figure}
 	\centering
 	\includegraphics[width=0.7\linewidth]{platoon/with-crashes-diagram}
-	\caption{Схема переходов между состояниями строя: сначала отказывает мастер, затем миньон.}
+	\caption{Схема переходов между состояниями строя: сначала отказывает мастер, затем миньон. Голубым цветом помечен мастер.}
 	\label{fig:with-crashes-diagram}
 \end{figure}
 
